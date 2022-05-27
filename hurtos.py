@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly_express as px
 #Lectura de archivo
 archivo='C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\hurto_a_personas_1.xlsx'
 hur = pd.read_excel(archivo)
@@ -36,28 +37,40 @@ sexv_enero=sexv_enero.pivot_table(index='FECHA HECHO',columns='GENERO',values='C
 f2=sexv_enero[['FEMENINO','MASCULINO']].plot()
 plt.show()
 #Grafico de barras
-f1=sns.catplot(data=sexv_enero,x='FECHA HECHO',y='CANTIDAD',hue='GENERO',kind='bar',size=7)
-plt.show()
-
 f=sns.catplot(data=sex,x='GENERO',y='CANTIDAD',kind='bar',size=7)
 plt.show()
 #Heatmap
-import requests
 import geopandas as gpd
 import folium
-import plotly_express as px
+import requests
 dep=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
-map_col='C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\departamentos.json'
-map_col_geo=requests.get(map_col).json()
+dep
+map_col=gpd.read_file('C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\Departamentos202205_shp\\departamentos.shp')
+map_col = map_col.drop(columns=['OBJECTID',	'DeCodigo',	'DeNorma','SHAPE_Area',	'SHAPE_Leng'])
+map_col=map_col.drop(columns=['DeArea'])
+map_col=map_col.sort_values(by='DeNombre')
+map_col
+map_col['DeNombre'] = map_col['DeNombre'].replace({'San Andrés Providencia y Santa Catalina':'SAN ANDRÉS',
+'Amazonas':'AMAZONAS','Antioquia':'ANTIOQUIA','Arauca':'ARAUCA','Atlántico':'ATLÁNTICO','Bolívar':'BOLÍVAR',
+'Boyacá':'BOYACÁ','Caldas':'CALDAS','Caquetá':'CAQUETÁ','Casanare':'CASANARE','Cauca':'CAUCA','Cesar':'CESAR',
+'Chocó':'CHOCÓ','Cundinamarca':'CUNDINAMARCA','Córdoba':'CÓRDOBA','Guainía':'GUAINÍA','Guaviare':'GUAVIARE',
+'Huila':'HUILA','La Guajira':'GUAJIRA','Magdalena':'MAGDALENA','Meta':'META','Nariño':'NARIÑO','Norte de Santander':'NORTE DE SANTANDER',
+'Putumayo':'PUTUMAYO','Quindío':'QUINDÍO','Risaralda':'RISARALDA','Santander':'SANTANDER','Sucre':'SUCRE',
+'Tolima':'TOLIMA','Valle del Cauca':'VALLE','Vaupés':'VAUPÉS','Vichada':'VICHADA'})
+map_col.index = map_col['DeNombre']
+map_col.index.name = 'DEPARTAMENTO'
 
-fig4=px.choropleth(
-    geojson=map_col_geo,
-    data_frame=dep,
-    featureidkey='properties.name',
-    color="CANTIDAD",
-    color_continuous_scale='burg'
-)
-
+m = folium.Map(location=[4.5,-74], zoom_start=5.4,min_zoom=4,max_zoom=11)
+folium.Choropleth(
+    geo_data=map_col.__geo_interface__,
+    data=dep,
+    key_on="feature.id",
+    fill_color="YlGn",
+    fill_opacity=0.7,
+    line_opacity=.1,
+    legend_name="Hurtos",
+).add_to(m)
+map_col
 
 
 
