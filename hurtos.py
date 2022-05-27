@@ -41,3 +41,25 @@ plt.show()
 
 f=sns.catplot(data=sex,x='GENERO',y='CANTIDAD',kind='bar',size=7)
 plt.show()
+#Heatmap
+import requests
+import geopandas as gpd
+import folium
+import plotly_express as px
+dep=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
+map_col='C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\departamentos.json'
+map_col_geo=requests.get(map_col).json()
+
+fig4=px.choropleth(
+    geojson=map_col_geo,
+    data_frame=dep,
+    featureidkey='properties.name',
+    color="CANTIDAD",
+    color_continuous_scale='burg'
+)
+
+
+
+
+
+
