@@ -41,36 +41,24 @@ f=sns.catplot(data=sex,x='GENERO',y='CANTIDAD',kind='bar',size=7)
 plt.show()
 #Heatmap
 import geopandas as gpd
-import folium
 import requests
-dep=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
-dep
-map_col=gpd.read_file('C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\Departamentos202205_shp\\departamentos.shp')
-map_col = map_col.drop(columns=['OBJECTID',	'DeCodigo',	'DeNorma','SHAPE_Area',	'SHAPE_Leng'])
-map_col=map_col.drop(columns=['DeArea'])
-map_col=map_col.sort_values(by='DeNombre')
-map_col
-map_col['DeNombre'] = map_col['DeNombre'].replace({'San Andrés Providencia y Santa Catalina':'SAN ANDRÉS',
-'Amazonas':'AMAZONAS','Antioquia':'ANTIOQUIA','Arauca':'ARAUCA','Atlántico':'ATLÁNTICO','Bolívar':'BOLÍVAR',
-'Boyacá':'BOYACÁ','Caldas':'CALDAS','Caquetá':'CAQUETÁ','Casanare':'CASANARE','Cauca':'CAUCA','Cesar':'CESAR',
-'Chocó':'CHOCÓ','Cundinamarca':'CUNDINAMARCA','Córdoba':'CÓRDOBA','Guainía':'GUAINÍA','Guaviare':'GUAVIARE',
-'Huila':'HUILA','La Guajira':'GUAJIRA','Magdalena':'MAGDALENA','Meta':'META','Nariño':'NARIÑO','Norte de Santander':'NORTE DE SANTANDER',
-'Putumayo':'PUTUMAYO','Quindío':'QUINDÍO','Risaralda':'RISARALDA','Santander':'SANTANDER','Sucre':'SUCRE',
-'Tolima':'TOLIMA','Valle del Cauca':'VALLE','Vaupés':'VAUPÉS','Vichada':'VICHADA'})
-map_col.index = map_col['DeNombre']
-map_col.index.name = 'DEPARTAMENTO'
+dep1=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
+dep=dep1.reset_index()
+dep['DEPARTAMENTO']=dep['DEPARTAMENTO'].replace({'ATLÁNTICO':'ATLANTICO','BOLÍVAR':'BOLIVAR','BOYACÁ':'BOYACA','CAQUETÁ':'CAQUETA',
+'CÓRDOBA':'CORDOBA','CHOCÓ':'CHOCO','HUILA':'Huila','GUAJIRA':'LA GUAJIRA','QUINDÍO':'QUINDIO','VALLE':'VALLE DEL CAUCA',
+'GUAINÍA':'GUANIA','VAUPÉS':'VAUPES','SAN ANDRÉS':'ARCHIPIELAGO DE SAN ANDRES PROVIDENCIA Y SANTA CATALINA'})
+url='https://gist.githubusercontent.com/john-guerra/43c7656821069d00dcbc/raw/be6a6e239cd5b5b803c6e7c2ec405b793a9064dd/Colombia.geo.json'
+col_regions_geo = requests.get(url).json()
 
-m = folium.Map(location=[4.5,-74], zoom_start=5.4,min_zoom=4,max_zoom=11)
-folium.Choropleth(
-    geo_data=map_col.__geo_interface__,
-    data=dep,
-    key_on="feature.id",
-    fill_color="YlGn",
-    fill_opacity=0.7,
-    line_opacity=.1,
-    legend_name="Hurtos",
-).add_to(m)
-map_col
+fig = px.choropleth(data_frame=dep, 
+                    geojson=col_regions_geo, 
+                    locations='DEPARTAMENTO', # nombre de la columna del Dataframe
+                    featureidkey='properties.NOMBRE_DPT',  # ruta al campo del archivo GeoJSON con el que se hará la relación (nombre de los estados)
+                    color='CANTIDAD', #El color depende de las cantidades
+                    color_continuous_scale="burg", #greens
+                   )
+fig.update_geos(showcountries=True, showcoastlines=True, showland=True, fitbounds="locations",mapbox_zoom=3.4,mapbox_center = {"lat": 4.570868, "lon": -74.2973328})
+fig.show()
 
 
 
