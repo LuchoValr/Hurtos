@@ -2,7 +2,7 @@ import datetime
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import plotly_express as px
+import plotly.express as px
 #Lectura de archivo
 archivo='C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\hurto_a_personas_1.xlsx'
 hur = pd.read_excel(archivo)
@@ -42,23 +42,24 @@ plt.show()
 #Heatmap
 import geopandas as gpd
 import requests
-dep1=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
-dep=dep1.reset_index()
+import plotly.offline as pyo
+dep2=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
+dep=dep2.reset_index()
 dep['DEPARTAMENTO']=dep['DEPARTAMENTO'].replace({'ATLÁNTICO':'ATLANTICO','BOLÍVAR':'BOLIVAR','BOYACÁ':'BOYACA','CAQUETÁ':'CAQUETA',
-'CÓRDOBA':'CORDOBA','CHOCÓ':'CHOCO','HUILA':'Huila','GUAJIRA':'LA GUAJIRA','QUINDÍO':'QUINDIO','VALLE':'VALLE DEL CAUCA',
+'CÓRDOBA':'CORDOBA','CHOCÓ':'CHOCO','GUAJIRA':'LA GUAJIRA','QUINDÍO':'QUINDIO','VALLE':'VALLE DEL CAUCA',
 'GUAINÍA':'GUANIA','VAUPÉS':'VAUPES','SAN ANDRÉS':'ARCHIPIELAGO DE SAN ANDRES PROVIDENCIA Y SANTA CATALINA'})
 url='https://gist.githubusercontent.com/john-guerra/43c7656821069d00dcbc/raw/be6a6e239cd5b5b803c6e7c2ec405b793a9064dd/Colombia.geo.json'
 col_regions_geo = requests.get(url).json()
-
-fig = px.choropleth(data_frame=dep, 
+fig = px.choropleth_mapbox(data_frame=dep, 
                     geojson=col_regions_geo, 
                     locations='DEPARTAMENTO', # nombre de la columna del Dataframe
                     featureidkey='properties.NOMBRE_DPT',  # ruta al campo del archivo GeoJSON con el que se hará la relación (nombre de los estados)
                     color='CANTIDAD', #El color depende de las cantidades
-                    color_continuous_scale="burg", #greens
+                    color_continuous_scale="Viridis", #greens
                    )
-fig.update_geos(showcountries=True, showcoastlines=True, showland=True, fitbounds="locations",mapbox_zoom=3.4,mapbox_center = {"lat": 4.570868, "lon": -74.2973328})
+fig.update_layout(mapbox_style="carto-positron",mapbox_zoom=4.2, mapbox_center = {"lat": 4.570868, "lon": -74.2973328})
 fig.show()
+pyo.plot(fig, filename = 'C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\mapa_col.html')
 
 
 
