@@ -20,6 +20,7 @@ hur.info()
 
 sex=hur.groupby(by=['GENERO']).sum().groupby(level=[0]).cumsum()
 sex=sex.reset_index()
+sex
 age=hur.groupby(by=['EDAD PERSONA']).sum().groupby(level=[0]).cumsum()
 age
 wep=hur.groupby(by=['ARMAS MEDIO']).sum().groupby(level=[0]).cumsum()
@@ -30,17 +31,24 @@ date
 #Visualizacion
 sexv=hur.groupby(by=['FECHA HECHO','GENERO']).sum().groupby(level=[0]).cumsum()
 sexv=sexv.reset_index()
-#Series de tiempo
+#Series de tiempo segun sexo
 #Enero
 sexv_enero=sexv.loc[sexv["FECHA HECHO"].between('2021-01-01', '2021-01-31')]
 sexv_enero=sexv_enero.pivot_table(index='FECHA HECHO',columns='GENERO',values='CANTIDAD')
 f2=sexv_enero[['FEMENINO','MASCULINO']].plot()
 plt.show()
+#Series de tiempo segun edad
+#Enero
+agev=hur.groupby(by=['FECHA HECHO','EDAD PERSONA']).sum().groupby(level=[0]).cumsum()
+agev=agev.reset_index()
+agev_enero=agev.loc[agev["FECHA HECHO"].between('2021-01-01', '2021-01-31')]
+agev_enero=agev_enero.pivot_table(index='FECHA HECHO',columns='EDAD PERSONA',values='CANTIDAD')
+f3=agev_enero[['ADOLESCENTES','ADULTOS','MENORES']].plot()
+plt.show()
 #Grafico de barras
 f=sns.catplot(data=sex,x='GENERO',y='CANTIDAD',kind='bar',size=7)
 plt.show()
 #Heatmap
-import geopandas as gpd
 import requests
 import plotly.offline as pyo
 dep2=hur.groupby(by=['DEPARTAMENTO']).sum().groupby(level=[0]).cumsum()
@@ -57,7 +65,7 @@ fig = px.choropleth_mapbox(data_frame=dep,
                     color='CANTIDAD', #El color depende de las cantidades
                     color_continuous_scale="Viridis", #greens
                    )
-fig.update_layout(mapbox_style="carto-positron",mapbox_zoom=4.2, mapbox_center = {"lat": 4.570868, "lon": -74.2973328})
+fig.update_layout(mapbox_style="carto-positron",mapbox_zoom=4.2, mapbox_center = {"lat": 4.570868, "lon": -74.2973328},title_text='Hurtos en Colombia del 2021')
 fig.show()
 pyo.plot(fig, filename = 'C:\\Users\\lucho\\OneDrive\\Documentos\\Proyectos\\Victimas-Crimen\\Hurtos\\mapa_col.html')
 
